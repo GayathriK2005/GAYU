@@ -1,0 +1,66 @@
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load dataset
+# Assuming you have a CSV file 'customer_data.csv' with the relevant customer features.
+data = pd.read_csv("customer_data.csv")
+
+# Show the first few rows of the dataset to understand its structure
+print(data.head())
+
+# Step 1: Data Preprocessing
+
+# Check for missing values in the dataset
+print(data.isnull().sum())
+
+# Fill missing values with the mean of each column (or median, mode, or drop depending on the dataset)
+data.fillna(data.mean(), inplace=True)
+
+# Step 2: Feature Engineering
+
+# Convert categorical variables to numeric values (one-hot encoding)
+# Assuming 'Category' is a categorical column
+data = pd.get_dummies(data, drop_first=True)
+
+# Step 3: Define features and target variable
+# Features are all columns except the target 'Churn'
+X = data.drop('Churn', axis=1)  # Features
+y = data['Churn']  # Target variable, where 'Churn' is the column indicating if the customer has churned (1) or not (0)
+
+# Step 4: Train-Test Split
+# Split data into 70% training and 30% testing
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Step 5: Train the Random Forest Model
+
+# Initialize the Random Forest classifier
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+
+# Fit the model to the training data
+model.fit(X_train, y_train)
+
+# Step 6: Model Evaluation
+
+# Predict the churn on the test set
+y_pred = model.predict(X_test)
+
+# Step 6.1: Accuracy Evaluation
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy of the model: {accuracy * 100:.2f}%")
+
+# Step 6.2: Classification Report
+# A more detailed classification report (precision, recall, F1-score)
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+# Step 6.3: Confusion Matrix
+# Generate a confusion matrix to evaluate model performance in terms of true/false positives/negatives
+cm = confusion_matrix(y_test, y_pred)
+
+# Plotting the confusion
