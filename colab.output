@@ -1,0 +1,145 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+# Load the dataset
+df = pd.read_csv('/content/WA_Fn-UseC_-Telco-Customer-Churn.csv')  # Make sure this CSV is in your working directory
+
+# 1. Data Overview
+print("----- First 5 rows -----")
+print(df.head())
+
+print("\n----- Data Info -----")
+print(df.info())
+
+print("\n----- Missing Values -----")
+print(df.isnull().sum())
+
+# Handle TotalCharges as numeric (some blanks are causing object type)
+df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
+df = df.dropna()
+
+# Drop customerID (not useful for prediction)
+df.drop('customerID', axis=1, inplace=True)
+
+# Encode categorical features
+label_encoders = {}
+for column in df.select_dtypes(include=['object']).columns:
+    le = LabelEncoder()
+    df[column] = le.fit_transform(df[column])
+    label_encoders[column] = le
+
+# 2. Splitting dataset
+X = df.drop('Churn', axis=1)
+y = df['Churn']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 3. Feature Scaling
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# 4. Model Training
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train, y_train)
+
+# 5. Predictions
+y_pred = model.predict(X_test)
+
+# 6. Evaluation
+print("\n----- Accuracy -----")
+print("Accuracy:", accuracy_score(y_test, y_pred))
+
+print("\n----- Confusion Matrix -----")
+print(confusion_matrix(y_test, y_pred))
+
+print("\n----- Classification Report -----")
+print(classification_report(y_test, y_pred))
+
+# 7. Visualizing Confusion Matrix
+conf_matrix = confusion_matrix(y_test, y_pred)
+plt.figure(figsize=(6, 4))
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix')
+plt.show()
+
+# 8. Feature Importance
+coefficients = pd.Series(model.coef_[0], index=X.columns)
+coefficients = coefficients.sort_values()
+plt.figure(figsize=(10, 6))
+coefficients.plot(kind='barh', color='skyblue')
+plt.title('Feature Importance (Logistic Regression Coefficients)')
+plt.show()
+----- First 5 rows -----
+   customerID  gender  SeniorCitizen Partner Dependents  tenure PhoneService  \
+0  7590-VHVEG  Female              0     Yes         No       1           No   
+1  5575-GNVDE    Male              0      No         No      34          Yes   
+2  3668-QPYBK    Male              0      No         No       2          Yes   
+3  7795-CFOCW    Male              0      No         No      45           No   
+4  9237-HQITU  Female              0      No         No       2          Yes   
+
+      MultipleLines InternetService OnlineSecurity  ... DeviceProtection  \
+0  No phone service             DSL             No  ...               No   
+1                No             DSL            Yes  ...              Yes   
+2                No             DSL            Yes  ...               No   
+3  No phone service             DSL            Yes  ...              Yes   
+4                No     Fiber optic             No  ...               No   
+
+  TechSupport StreamingTV StreamingMovies        Contract PaperlessBilling  \
+0          No          No              No  Month-to-month              Yes   
+1          No          No              No        One year               No   
+2          No          No              No  Month-to-month              Yes   
+3         Yes          No              No        One year               No   
+4          No          No              No  Month-to-month              Yes   
+
+               PaymentMethod MonthlyCharges  TotalCharges Churn  
+0           Electronic check          29.85         29.85    No  
+1               Mailed check          56.95        1889.5    No  
+...
+    accuracy                           0.79      1407
+   macro avg       0.73      0.69      0.70      1407
+weighted avg       0.77      0.79      0.78      1407
+
+Output is truncated. View as a scrollable element or open in a text editor. Adjust cell output settings...
+<ipython-input-2-b694fd6cd70c>:30: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df.drop('customerID', axis=1, inplace=True)
+<ipython-input-2-b694fd6cd70c>:36: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df[column] = le.fit_transform(df[column])
+<ipython-input-2-b694fd6cd70c>:36: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df[column] = le.fit_transform(df[column])
+<ipython-input-2-b694fd6cd70c>:36: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df[column] = le.fit_transform(df[column])
+<ipython-input-2-b694fd6cd70c>:36: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame.
+...
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df[column] = le.fit_transform(df[column])
+Output is truncated. View as a scrollable element or open in a text editor. Adjust cell output settings...
+<Figure size 600x400 with 2 Axes>
+<Figure size 1000x600 with 1 Axes>
